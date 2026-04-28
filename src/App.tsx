@@ -23,7 +23,9 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
-  BookOpen
+  BookOpen,
+  Plus,
+  Minus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -35,7 +37,74 @@ import { AnalysisResults } from './components/AnalysisResults.tsx';
 import { GraphCanvas } from './components/GraphCanvas.tsx';
 import { KnowledgeCheck } from './components/KnowledgeCheck.tsx';
 import { solveQuadratic, formatNum, getFunctionValue } from './utils/math-utils.ts';
-import { FONT_FAMILY, DEFAULT_BLUE, COLORS, functionOptions } from './constants.ts';
+import { FONT_FAMILY, DEFAULT_BLUE, COLORS, THEME_PRESETS, functionOptions } from './constants.ts';
+
+const CoefficientInput: React.FC<{ 
+  label: string; 
+  value: number; 
+  onChange: (val: number) => void; 
+  step?: number;
+}> = ({ 
+  label, 
+  value, 
+  onChange, 
+  step = 1 
+}) => {
+  const [inputValue, setInputValue] = useState(value.toString());
+
+  useEffect(() => {
+    const currentNum = parseFloat(inputValue);
+    if (currentNum !== value && inputValue !== '-' && inputValue !== '.' && inputValue !== '') {
+      setInputValue(value.toString());
+    }
+  }, [value]);
+
+  const handleInputChange = (val: string) => {
+    // Allow empty string, single minus, or single dot for starting typing
+    setInputValue(val);
+    
+    if (val === '' || val === '-' || val === '.') return;
+    
+    const parsed = parseFloat(val);
+    if (!isNaN(parsed)) {
+      onChange(parsed);
+    }
+  };
+
+  const adjustValue = (delta: number) => {
+    const newValue = Math.round((value + delta) * 10) / 10;
+    onChange(newValue);
+    setInputValue(newValue.toString());
+  };
+
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="font-bold text-zinc-400 text-[10px] uppercase">{label}</span>
+      <div className="flex items-center gap-1">
+        <button 
+          onClick={() => adjustValue(-step)}
+          className="p-1 px-2.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-600 transition-colors active:scale-90"
+        >
+          <Minus className="w-3 h-3" />
+        </button>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={inputValue}
+          onFocus={(e) => e.target.select()}
+          onChange={(e) => handleInputChange(e.target.value)}
+          className="flex-1 min-w-0 bg-zinc-50 border border-zinc-200 rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-indigo-500 font-bold text-sm text-center"
+        />
+        <button 
+          onClick={() => adjustValue(step)}
+          className="p-1 px-2.5 bg-zinc-100 hover:bg-zinc-200 rounded-lg text-zinc-600 transition-colors active:scale-90"
+        >
+          <Plus className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default function App() {
   const [funcType, setFuncType] = useState('rational21');
@@ -55,7 +124,8 @@ export default function App() {
     strokeWidth: 2, 
     graphColor: DEFAULT_BLUE, 
     zoom: 1.0, 
-    bbtLineWidth: 2 
+    bbtLineWidth: 2,
+    theme: THEME_PRESETS[0]
   });
   const [isGraphFullscreen, setIsGraphFullscreen] = useState(false);
   const [intersection, setIntersection] = useState({ 
@@ -270,18 +340,93 @@ export default function App() {
                   }
 
                   return (
-                    <div key={key} className="flex flex-col gap-1">
-                      <span className="font-bold text-zinc-400 text-[10px] uppercase">{label}</span>
-                      <input
-                        type="number"
-                        step={key === 'a' && (funcType === 'exponential' || funcType === 'logarithmic') ? '0.1' : '1'}
-                        value={coeffs[key as keyof typeof coeffs]}
-                        onChange={(e) => setCoeffs({ ...coeffs, [key]: parseFloat(e.target.value) || 0 })}
-                        className="w-full bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-500 font-bold text-sm"
-                      />
-                    </div>
+                    <CoefficientInput
+                      key={key}
+                      label={label}
+                      value={Number(coeffs[key as keyof typeof coeffs])}
+                      step={key === 'a' && (funcType === 'exponential' || funcType === 'logarithmic') ? 0.1 : 1}
+                      onChange={(val) => setCoeffs({ ...coeffs, [key]: val })}
+                    />
                   );
                 })}
+              </div>
+            </SidebarItem>
+
+            <SidebarItem title="3. Giao diện Đồ thị" icon={Palette}>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {THEME_PRESETS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setConfig(prev => ({ ...prev, theme: t }))}
+                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all border ${
+                      config.theme?.id === t.id ? 'bg-zinc-900 text-white border-zinc-900 shadow-lg' : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400'
+                    }`}
+                  >
+                    {t.name}
+                  </button>
+                ))}
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Màu đồ thị</span>
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: config.theme?.graphColor }} />
+                  </div>
+                  <div className="grid grid-cols-7 gap-1">
+                    {COLORS.map(c => (
+                      <button 
+                        key={c.hex} 
+                        onClick={() => setConfig(prev => ({ ...prev, theme: { ...prev.theme, graphColor: c.hex } }))}
+                        className={`w-full aspect-square rounded-lg border-2 transition-transform hover:scale-110 ${config.theme?.graphColor === c.hex ? 'border-zinc-900 scale-110' : 'border-transparent'}`}
+                        style={{ backgroundColor: c.hex }}
+                        title={c.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Nền</span>
+                      <input 
+                        type="color" 
+                        value={config.theme?.bgColor} 
+                        onChange={e => setConfig(prev => ({ ...prev, theme: { ...prev.theme, bgColor: e.target.value } }))}
+                        className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                   </div>
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Trục</span>
+                      <input 
+                        type="color" 
+                        value={config.theme?.axisColor} 
+                        onChange={e => setConfig(prev => ({ ...prev, theme: { ...prev.theme, axisColor: e.target.value } }))}
+                        className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Lưới</span>
+                      <input 
+                        type="color" 
+                        value={config.theme?.gridColor} 
+                        onChange={e => setConfig(prev => ({ ...prev, theme: { ...prev.theme, gridColor: e.target.value } }))}
+                        className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                   </div>
+                   <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Chữ</span>
+                      <input 
+                        type="color" 
+                        value={config.theme?.textColor} 
+                        onChange={e => setConfig(prev => ({ ...prev, theme: { ...prev.theme, textColor: e.target.value } }))}
+                        className="w-full h-8 rounded-lg cursor-pointer bg-transparent border-0"
+                      />
+                   </div>
+                </div>
               </div>
             </SidebarItem>
 
@@ -319,8 +464,8 @@ export default function App() {
                     </div>
                   ) : (
                       <div className="grid grid-cols-2 gap-2">
-                          <input type="number" placeholder="a" className="bg-zinc-50 border border-zinc-200 rounded-lg p-2 text-xs font-bold" value={intersection.a} onChange={e => setIntersection(p => ({...p, a: parseFloat(e.target.value) || 0}))}/>
-                          <input type="number" placeholder="b" className="border border-zinc-200 bg-zinc-50 rounded-lg p-2 text-xs font-bold" value={intersection.b} onChange={e => setIntersection(p => ({...p, b: parseFloat(e.target.value) || 0}))}/>
+                          <CoefficientInput label="Hệ số a" value={Number(intersection.a)} onChange={val => setIntersection(p => ({...p, a: val}))} />
+                          <CoefficientInput label="Hệ số b" value={Number(intersection.b)} onChange={val => setIntersection(p => ({...p, b: val}))} />
                       </div>
                   )}
                 </div>

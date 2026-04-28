@@ -30,6 +30,14 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const theme = config.theme || {
+    bgColor: 'white',
+    axisColor: '#4f46e5',
+    gridColor: '#e5e7eb',
+    graphColor: config.graphColor || '#4f46e5',
+    textColor: '#1e293b'
+  };
+
   useEffect(() => {
     if (analysis && analysis.valid) {
       draw();
@@ -52,7 +60,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     canvas.width = w;
     canvas.height = h;
 
-    ctx.fillStyle = 'white';
+    ctx.fillStyle = theme.bgColor;
     ctx.fillRect(0, 0, w, h);
 
     let xMin = -6, xMax = 6, yMin = -6, yMax = 6;
@@ -126,7 +134,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       let gridStep = 1;
       if (xMax - xMin > 20) gridStep = 2;
       if (xMax - xMin > 50) gridStep = 5;
-      ctx.strokeStyle = '#e5e7eb';
+      ctx.strokeStyle = theme.gridColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
       for (let x = Math.ceil(xMin / gridStep) * gridStep; x <= xMax; x += gridStep) {
@@ -139,8 +147,8 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
       }
       ctx.stroke();
 
-      ctx.strokeStyle = DEFAULT_BLUE;
-      ctx.fillStyle = DEFAULT_BLUE;
+      ctx.strokeStyle = theme.axisColor;
+      ctx.fillStyle = theme.axisColor;
       ctx.lineWidth = config.strokeWidth;
       const arrowSize = 6;
       if (yOrigin >= -20 && yOrigin <= h + 20) {
@@ -167,6 +175,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
         ctx.closePath();
         ctx.fill();
       }
+      ctx.fillStyle = theme.textColor;
       ctx.font = `italic bold ${config.fontSize + 4}pt ${MATH_FONT_FAMILY}`;
       if (yOrigin >= -20 && yOrigin <= h + 20) ctx.fillText('x', w - 20, yOrigin - 12);
       if (xOrigin >= -20 && xOrigin <= w + 20) ctx.fillText('y', xOrigin + 12, 25);
@@ -175,7 +184,7 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
     drawGridAndAxes();
 
     // Vẽ đồ thị
-    ctx.strokeStyle = config.graphColor;
+    ctx.strokeStyle = theme.graphColor;
     ctx.lineWidth = config.strokeWidth;
     ctx.beginPath();
 
