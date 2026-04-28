@@ -530,7 +530,7 @@ export default function App() {
 
             {/* Math Story Card - New block in the grid */}
             <div className={`
-              md:col-span-1 lg:col-span-1 row-span-2
+              md:col-span-1 lg:col-span-1 
               ${activeTab === 'story' ? 'flex flex-1' : 'hidden md:flex'}
             `}>
               <MathStory funcType={funcType} />
@@ -544,7 +544,7 @@ export default function App() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     className={`
-                      lg:col-span-3 bg-white rounded-[2.5rem] shadow-sm border border-zinc-200 overflow-hidden flex flex-col
+                      lg:col-span-2 bg-white rounded-[2.5rem] shadow-sm border border-zinc-200 overflow-hidden flex flex-col
                       ${activeTab === 'analysis' ? 'flex' : 'hidden lg:flex'}
                     `}
                 >
