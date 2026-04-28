@@ -448,19 +448,65 @@ export default function App() {
                     <button onClick={() => setIntersection(p => ({...p, type: 'tangent'}))} className={`flex-1 text-[10px] py-1.5 rounded-lg font-bold transition-all ${intersection.type === 'tangent' ? 'bg-white shadow-sm text-indigo-600' : 'text-zinc-500'}`}>Tiếp tuyến</button>
                   </div>
                   {intersection.type === 'horizontal' ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-black text-indigo-600">m = {intersection.m}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tham số m:</span>
+                        <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{intersection.m}</span>
                       </div>
-                      <input type="range" min="-10" max="10" step="0.1" value={intersection.m} onChange={(e) => setIntersection(p => ({...p, m: parseFloat(e.target.value)}))} className="w-full accent-indigo-600 h-1.5 bg-zinc-200 rounded-lg appearance-none" />
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setIntersection(p => ({...p, m: Math.round((p.m - 0.1) * 10) / 10}))}
+                          className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-xl text-zinc-600 transition-all active:scale-90"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <input 
+                          type="range" 
+                          min="-10" 
+                          max="10" 
+                          step="0.1" 
+                          value={intersection.m} 
+                          onChange={(e) => setIntersection(p => ({...p, m: parseFloat(e.target.value)}))} 
+                          className="flex-1 accent-indigo-600 h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer" 
+                        />
+                        <button 
+                          onClick={() => setIntersection(p => ({...p, m: Math.round((p.m + 0.1) * 10) / 10}))}
+                          className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-xl text-zinc-600 transition-all active:scale-90"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   ) : intersection.type === 'tangent' ? (
-                    <div className="space-y-2">
-                         <div className="flex items-center justify-between">
-                             <span className="text-xs font-bold text-zinc-500">Hoành độ tiếp điểm x₀: {intersection.m}</span>
-                         </div>
-                         <input type="range" min="-5" max="5" step="0.1" value={intersection.m} onChange={(e) => setIntersection(p => ({...p, m: parseFloat(e.target.value)}))} className="w-full accent-indigo-600 h-1.5 bg-zinc-200 rounded-lg appearance-none" />
-                         <p className="text-[10px] text-zinc-400">Tiếp tuyến tại điểm có hoành độ x₀</p>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Tiếp điểm x₀:</span>
+                        <span className="text-sm font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-lg">{intersection.m}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => setIntersection(p => ({...p, m: Math.round((p.m - 0.1) * 10) / 10}))}
+                          className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-xl text-zinc-600 transition-all active:scale-90"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <input 
+                          type="range" 
+                          min="-5" 
+                          max="5" 
+                          step="0.1" 
+                          value={intersection.m} 
+                          onChange={(e) => setIntersection(p => ({...p, m: parseFloat(e.target.value)}))} 
+                          className="flex-1 accent-indigo-600 h-2 bg-zinc-200 rounded-lg appearance-none cursor-pointer" 
+                        />
+                        <button 
+                          onClick={() => setIntersection(p => ({...p, m: Math.round((p.m + 0.1) * 10) / 10}))}
+                          className="p-2 bg-zinc-100 hover:bg-zinc-200 rounded-xl text-zinc-600 transition-all active:scale-90"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-400 italic">Di chuyển x₀ để xem tiếp tuyến tại các điểm khác nhau</p>
                     </div>
                   ) : (
                       <div className="grid grid-cols-2 gap-2">
